@@ -4,3 +4,5 @@ scikit-learn>=1.8,<2
 statsmodels>=0.14,<0.15
 matplotlib>=3.10,<4
 tensorflow>=2.20; python_version < "3.14"
+fastapi>=0.115,<1
+uvicorn[standard]>=0.30,<1
