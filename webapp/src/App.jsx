@@ -1,10 +1,12 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Chart from "chart.js/auto";
 
+const API_BASE = (import.meta.env.VITE_API_BASE_URL || "https://bayfry-hatcheries.onrender.com").replace(/\/$/, "");
+
 const API = {
-  login: "/api/auth/login",
-  current: "/api/data/current?hours=96",
-  prediction: "/api/predictions/next-day?history_hours=72"
+  login: `${API_BASE}/api/auth/login`,
+  current: `${API_BASE}/api/data/current?hours=96`,
+  prediction: `${API_BASE}/api/predictions/next-day?history_hours=72`
 };
 
 const thresholds = {
@@ -610,9 +612,11 @@ function normalizeApiData(payload) {
 function normalizeForecast(payload, records) {
   const rows = Array.isArray(payload) ? payload : payload.forecast || payload.predictions || [];
   return rows.slice(0, 7).map((row, day) => ({
-    date: addDays(new Date(), day + 1),
+    date: new Date(row.date || row.timestamp || addDays(new Date(), day + 1)),
     summary: row.summary || "Model forecast",
-    hours: createHourlyForecast(day + 1, records.at(-1))
+    hours: Array.isArray(row.hours) && row.hours.length
+      ? normalizeApiData(row.hours)
+      : createHourlyForecast(day + 1, records.at(-1))
   }));
 }
 
