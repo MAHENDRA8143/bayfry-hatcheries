@@ -154,32 +154,45 @@ class LSTMModel:
             X_train: Training sequences
             y_train: Training targets
         """
+        X_train = np.asarray(X_train)
+        y_train = np.asarray(y_train)
+        sample_count = X_train.shape[0]
+
         if not self.uses_tensorflow:
+            use_early_stopping = sample_count >= 10
             self.model = MLPRegressor(
                 hidden_layer_sizes=(64, 32),
                 activation='relu',
                 solver='adam',
                 max_iter=max(200, LSTM_PARAMS['epochs'] * 10),
                 random_state=LSTM_PARAMS.get('random_state', 42),
-                early_stopping=True,
-                validation_fraction=LSTM_PARAMS['validation_split']
+                early_stopping=use_early_stopping,
+                validation_fraction=LSTM_PARAMS['validation_split'] if use_early_stopping else 0.0
             )
             self.model.fit(self._flatten_sequences(X_train), y_train)
-            print("✓ Neural fallback model trained (TensorFlow unavailable)")
+            if use_early_stopping:
+                print("✓ Neural fallback model trained (TensorFlow unavailable)")
+            else:
+                print("✓ Neural fallback model trained without validation split (TensorFlow unavailable)")
             return
 
         input_shape = (X_train.shape[1], X_train.shape[2])
         self.build_model(input_shape)
+
+        validation_split = LSTM_PARAMS['validation_split'] if sample_count >= 10 else 0.0
         
         self.model.fit(
             X_train, y_train,
             epochs=LSTM_PARAMS['epochs'],
             batch_size=LSTM_PARAMS['batch_size'],
-            validation_split=LSTM_PARAMS['validation_split'],
+            validation_split=validation_split,
             verbose=0
         )
-        
-        print("✓ LSTM model trained")
+
+        if validation_split > 0:
+            print("✓ LSTM model trained")
+        else:
+            print("✓ LSTM model trained without validation split")
     
     def predict(self, X):
         """
