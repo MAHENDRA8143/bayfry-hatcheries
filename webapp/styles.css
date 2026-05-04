@@ -21,7 +21,9 @@
 
 body {
   margin: 0;
-  min-height: 100vh;
+  /* Use viewport-safe unit to avoid mobile address-bar resize flicker */
+  min-height: 100dvh;
+  min-height: -webkit-fill-available;
   color: var(--text);
   background: radial-gradient(circle at 20% 10%, #087aa6, transparent 30%),
     radial-gradient(circle at 85% 20%, #12a7d9, transparent 28%), var(--bg);
@@ -196,7 +198,7 @@ button { cursor: pointer; }
 }
 
 .login-screen {
-  min-height: 100vh;
+  min-height: 100dvh;
   display: grid;
   place-items: center;
   padding: 24px;
@@ -505,6 +507,25 @@ td { color: #eaffff; }
   .topbar, .welcome, .panel-head, .actions-head { align-items: stretch; flex-direction: column; }
   .kpi-grid, .chart-grid, .forecast-grid, .modal-grid { grid-template-columns: 1fr; }
   .login-card { padding: 24px; border-radius: 20px; }
+  /* Reduce heavy visuals and animations on small screens to prevent repaint/flicker */
+  .scene,
+  .water-surface,
+  .caustics,
+  .rays,
+  .waves,
+  .current,
+  .bubble-field,
+  .particle-field,
+  .aeration,
+  .prawn,
+  .formula-field { display: none !important; }
+
+  /* Remove expensive backdrop filters and shadows on mobile */
+  .glass { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; box-shadow: none !important; }
+
+  /* Avoid 3D transforms and long transitions that can trigger repaint flashes */
+  .login-card { transition: none !important; transform: none !important; }
+  .login-card.opening { transform: none !important; opacity: 1 !important; }
   .shell { padding-inline: 12px; }
   .topbar { position: static; }
   .welcome h2 { font-size: 1.65rem; }

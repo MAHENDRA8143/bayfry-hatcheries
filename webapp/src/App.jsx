@@ -447,6 +447,9 @@ function ChartCanvas({ rows, keys, onAlert, live = false }) {
   useEffect(() => {
     if (!ref.current || !rows.length) return undefined;
     chartRef.current?.destroy();
+    const isNarrow = typeof window !== "undefined" && window.matchMedia && window.matchMedia('(max-width:640px)').matches;
+    const animationDuration = live && !isNarrow ? 450 : 0;
+
     chartRef.current = new Chart(ref.current, {
       type: "line",
       data: {
@@ -467,7 +470,7 @@ function ChartCanvas({ rows, keys, onAlert, live = false }) {
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        animation: { duration: live ? 450 : 0 },
+        animation: { duration: animationDuration },
         interaction: { mode: "nearest", intersect: true },
         plugins: { legend: { labels: { color: "#dffcff" } } },
         scales: {
